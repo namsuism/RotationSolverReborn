@@ -37,8 +37,11 @@ public sealed class FredderslyGNB : GunbreakerRotation
 		}
 
 		// Start the filler Gnashing Fang at the guide's hold window so an
-		// extra Gnashing GCD or continuation can land inside No Mercy.
-		return NoMercyPvE.Cooldown.WillHaveOneCharge(FillerGnashingHoldWindow);
+		// extra Gnashing GCD or continuation can land inside No Mercy. Gate on
+		// No Mercy already cooling down so the opener doesn't rush Gnashing Fang
+		// before the first No Mercy (its charge is up from the pull).
+		return NoMercyPvE.Cooldown.IsCoolingDown
+			&& NoMercyPvE.Cooldown.WillHaveOneCharge(FillerGnashingHoldWindow);
 	}
 
 	private bool ShouldStallForGnashingFang()
@@ -64,8 +67,9 @@ public sealed class FredderslyGNB : GunbreakerRotation
 
 	private bool ShouldUseLevel100NoMercy(IAction nextGCD)
 	{
-		// NM after Brutal Shell; delayed opener fires NM before Bloodfest so don't gate on it
-		if (CombatElapsedLessGCD(3) && IsLastComboAction(ActionID.BrutalShellPvE))
+		// NM after Brutal Shell; delayed opener fires NM before Bloodfest so don't gate on it.
+		// Window covers Lightning Shot opening the GCD clock when there's no countdown.
+		if (CombatElapsedLessGCD(4) && IsLastComboAction(ActionID.BrutalShellPvE))
 		{
 			return OpenerVariant == OpenerStrategy.DelayedBloodfest || HasBloodfest;
 		}
